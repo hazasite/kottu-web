@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KOTTU LAB | Gourmet Street Food & Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-gold: #ffb703;
+      --primary-orange: #ff5e00;
+      --gloss-bg: rgba(18, 18, 26, 0.55);
+      --gloss-border: rgba(255, 255, 255, 0.15);
+      --gloss-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 60%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #060609;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* Top Progress Bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-orange), var(--primary-gold));
+      width: 0%;
+      z-index: 1000;
+    }
+
+    /* Fixed Background Canvas */
+    #hero-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+    }
+
+    /* Soft Ambient Overlay (Not pure black) */
+    .canvas-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at 50% 50%, rgba(6, 6, 9, 0.15) 0%, rgba(6, 6, 9, 0.65) 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* ================= GLOSSY NAV BAR ================= */
+    header {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 1280px;
+      padding: 14px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      background: var(--gloss-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--gloss-border);
+      border-radius: 100px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo span.highlight {
+      background: linear-gradient(135deg, #ff5e00, #ffb703);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: 0.3s;
+    }
+
+    .nav-links a:hover { color: #fff; }
+
+    .glossy-btn {
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-gold));
+      color: #fff;
+      padding: 10px 24px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(255, 94, 0, 0.35);
+      transition: 0.3s ease;
+    }
+
+    .glossy-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(255, 94, 0, 0.5);
+    }
+
+    /* ================= SCROLL HERO SECTIONS ================= */
+    .video-scroll-zone {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 8%;
+    }
+
+    .section.right { justify-content: flex-end; }
+    .section.center { justify-content: center; text-align: center; }
+
+    .card {
+      position: relative;
+      background: var(--gloss-bg);
+      backdrop-filter: blur(30px) saturate(200%);
+      -webkit-backdrop-filter: blur(30px) saturate(200%);
+      border: 1px solid var(--gloss-border);
+      padding: 40px;
+      border-radius: 32px;
+      max-width: 520px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+      transform: translateY(40px) scale(0.95);
+      opacity: 0;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .section.active .card {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 183, 3, 0.15);
+      color: var(--primary-gold);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.8rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    p { color: rgba(255, 255, 255, 0.7); font-size: 1.02rem; line-height: 1.65; margin-bottom: 25px; }
+
+    .price-tag {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .price { font-size: 2rem; font-weight: 800; color: var(--primary-gold); }
+
+    .order-btn {
+      background: #ffffff;
+      color: #060609;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .order-btn:hover { background: var(--primary-orange); color: #fff; }
+
+    /* Side Dots Navigation */
+    .dots-nav {
+      position: fixed;
+      right: 35px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      transition: 0.4s;
+    }
+
+    .dot.active {
+      background: var(--primary-gold);
+      transform: scale(1.6);
+      box-shadow: 0 0 15px var(--primary-gold);
+    }
+
+   /* Blurred Content Zone (20% Blur) */
+.normal-content-zone {
+  position: relative;
+  z-index: 2;
+  background: rgba(12, 12, 18, 0.35); 
+  backdrop-filter: blur(6px) saturate(160%);
+  -webkit-backdrop-filter: blur(6px) saturate(160%);
+  border-top: 1px solid var(--gloss-border);
+  padding: 100px 8%;
+}
+
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+      max-width: 1280px;
+      margin: 0 auto 80px auto;
+    }
+
+    .feature-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--gloss-border);
+      padding: 35px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .section-title {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px auto;
+    }
+
+    .section-title h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    /* Blurred Footer (20% Blur) */
+footer {
+  background: rgba(8, 8, 12, 0.45);
+  backdrop-filter: blur(6px) saturate(160%);
+  -webkit-backdrop-filter: blur(6px) saturate(160%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 60px 8% 30px 8%;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  z-index: 2;
+}
+
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 40px;
+      max-width: 1280px;
+      margin: 0 auto 50px auto;
+    }
+
+    .footer-col h4 {
+      color: #fff;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+    }
+
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 12px; }
+    .footer-col ul li a { color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; }
+    .footer-col ul li a:hover { color: var(--primary-gold); }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.9rem;
+    }
+
+    /* ================= WHATSAPP ORDER MODAL ================= */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(15px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.4s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .order-modal {
+      background: rgba(22, 22, 32, 0.95);
+      border: 1px solid var(--gloss-border);
+      padding: 40px;
+      border-radius: 28px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px; right: 25px;
+      font-size: 1.5rem;
+      color: #aaa;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-group select option {
+      background: #161620;
+      color: #fff;
+    }
+
+    .send-wa-btn {
+      width: 100%;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+      transition: 0.3s;
+    }
+
+    .send-wa-btn:hover { background: #20ba5a; }
+
+    @media (max-width: 768px) {
+      header { width: 95%; padding: 12px 20px; }
+      .nav-links { display: none; }
+      .dots-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-bar"></div>
+
+  <!-- Background Frame Canvas -->
+  <canvas id="hero-canvas"></canvas>
+  <div class="canvas-overlay"></div>
+
+  <!-- Glossy Header -->
+  <header>
+    <div class="logo">🔥 KOTTU<span class="highlight">LAB</span></div>
+    <ul class="nav-links">
+      <li><a href="#lineup">The Lineup</a></li>
+      <li><a href="#about">Our Story</a></li>
+      <li><a href="#location">Find Us</a></li>
+    </ul>
+    <button class="glossy-btn" onclick="openOrderModal('General Order')">Order via WhatsApp</button>
+  </header>
+
+  <!-- Side Navigation Dots -->
+  <div class="dots-nav">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <!-- Video Frame Scroll Zone -->
+  <div class="video-scroll-zone" id="lineup">
+
+    <section class="section center active">
+      <div class="card" style="max-width: 680px;">
+        <span class="badge">✨ Artisan Street Food</span>
+        <h1>STREET ART ON HOT METAL</h1>
+        <p>Scroll down to experience Sri Lanka's finest wok-charred kottu roti delicacies frame-by-frame.</p>
+        <button class="glossy-btn" style="padding: 14px 36px;" onclick="openOrderModal('General Order')">Order Now</button>
+      </div>
+    </section>
+
+    <section class="section left">
+      <div class="card">
+        <span class="badge">Dish #01</span>
+        <h2>Artisan Roast Chicken</h2>
+        <p>Smokey wood-fired chicken chopped over hot parotta roti, scallions, fresh lime, and rich roasted black curry sauce.</p>
+        <div class="price-tag">
+          <span class="price">Rs. 1,650</span>
+          <button class="order-btn" onclick="openOrderModal('Artisan Roast Chicken - Rs. 1650')">Order Dish</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section right">
+      <div class="card">
+        <span class="badge">Dish #02</span>
+        <h2>Molten Cheese Lava</h2>
+        <p>Drenched in rich melted Mozzarella & warm Golden Cheddar lava with garlic-infused butter drizzle and capsicum.</p>
+        <div class="price-tag">
+          <span class="price">Rs. 2,150</span>
+          <button class="order-btn" onclick="openOrderModal('Molten Cheese Lava - Rs. 2150')">Order Dish</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section left">
+      <div class="card">
+        <span class="badge">Dish #03</span>
+        <h2>Devilled Beef & Egg</h2>
+        <p>Cubed soft parotta tossed in spicy devilled gravy, wok-fried beef strips, caramelised onions, and a fried egg.</p>
+        <div class="price-tag">
+          <span class="price">Rs. 2,250</span>
+          <button class="order-btn" onclick="openOrderModal('Devilled Beef & Egg - Rs. 2250')">Order Dish</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section right">
+      <div class="card">
+        <span class="badge">Dish #04</span>
+        <h2>Cast-Iron Seafood Sizzler</h2>
+        <p>Served hot on a sizzling iron skillet. Topped with butter-poached jumbo prawns, calamari rings, and cheese glaze.</p>
+        <div class="price-tag">
+          <span class="price">Rs. 2,850</span>
+          <button class="order-btn" onclick="openOrderModal('Cast-Iron Seafood Sizzler - Rs. 2850')">Order Dish</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Normal Content Zone (Background Frame Loop 90-120 smoothly blurred underneath) -->
+  <div class="normal-content-zone" id="about">
+    
+    <div class="section-title">
+      <span class="badge">WHY KOTTU LAB?</span>
+      <h3>Gourmet Excellence in Every Chopping Sound</h3>
+      <p>We elevated Sri Lankan street food into an ultra-premium dining experience using open-flame iron griddles and secret family spices.</p>
+    </div>
+
+    <div class="content-grid">
+      <div class="feature-box">
+        <span class="feature-icon">🔪</span>
+        <h4>Hand-Chopped Live</h4>
+        <p>Every single order is freshly sliced on sizzling iron griddles in front of you. Maximum freshness and theatrical street vibes.</p>
+      </div>
+
+      <div class="feature-box">
+        <span class="feature-icon">🧀</span>
+        <h4>100% Real Dairy Cheese</h4>
+        <p>No artificial cheese sauces. We melt pure Mozzarella and aged Cheddar directly over the piping hot roti.</p>
+      </div>
+
+      <div class="feature-box">
+        <span class="feature-icon">🌙</span>
+        <h4>Late Night Craving Service</h4>
+        <p>Open till 2:00 AM daily. Hot, fiery, and comforting meals delivered straight to your doorstep when midnight hunger strikes.</p>
+      </div>
+    </div>
+
+    <div class="section-title" id="location" style="margin-top: 80px;">
+      <span class="badge">VISIT OUR LAB</span>
+      <h3>Hot Flame. Cool Atmosphere.</h3>
+      <p>Colombo 03 | Open Daily from 4:00 PM to 2:00 AM</p>
+    </div>
+
+  </div>
+
+  <!-- Blurred Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="logo" style="margin-bottom: 15px;">🔥 KOTTU<span class="highlight">LAB</span></div>
+        <p style="font-size: 0.9rem;">Elevating Sri Lankan street food with luxury aesthetics and uncompromising flavor standards.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#lineup">The Menu Lineup</a></li>
+          <li><a href="#about">About Our Kitchen</a></li>
+          <li><a href="#location">Store Locations</a></li>
+          <li><a href="#" onclick="openOrderModal('General Order')">WhatsApp Order</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Opening Hours</h4>
+        <ul>
+          <li>Mon - Thu: 4:00 PM - 12:00 AM</li>
+          <li>Fri - Sun: 4:00 PM - 2:00 AM</li>
+          <li>Delivery: Available Night Long</li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Direct Contact</h4>
+        <ul>
+          <li>📞 Hotline: +94 77 123 4567</li>
+          <li>📍 Location: No. 45, Marine Drive, Colombo 03</li>
+          <li>💬 WhatsApp Orders Open</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 KOTTU LAB Sri Lanka. All Rights Reserved. Crafted for Foodies.</p>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Order Modal -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="order-modal">
+      <span class="close-modal" onclick="closeOrderModal()">&times;</span>
+      <h3 style="font-size: 1.6rem; margin-bottom: 5px;">Place WhatsApp Order</h3>
+      <p style="font-size: 0.85rem; margin-bottom: 20px;">Fill in the details to send your order directly to our kitchen.</p>
+
+      <form id="waForm" onsubmit="sendWhatsAppOrder(event)">
+        <div class="form-group">
+          <label>Selected Dish</label>
+          <input type="text" id="modalDish" readonly style="color: var(--primary-gold); font-weight: 700;">
+        </div>
+
+        <div class="form-group">
+          <label>Quantity</label>
+          <select id="modalQty">
+            <option value="1">1 Portion</option>
+            <option value="2">2 Portions</option>
+            <option value="3">3 Portions</option>
+            <option value="4">4+ Portions</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Spice Preference</label>
+          <select id="modalSpice">
+            <option value="Mild 🌶️">Mild (Less Chili)</option>
+            <option value="Medium 🌶️🌶️" selected>Medium (Standard Lankan)</option>
+            <option value="Fiery Hot 🌶️🌶️🌶️">Fiery Hot (Extra Spicy)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="modalName" placeholder="e.g. Kasun Perera" required>
+        </div>
+
+        <div class="form-group">
+          <label>Delivery Address / Takeaway</label>
+          <input type="text" id="modalAddress" placeholder="e.g. No 12, Galle Road, Colombo 03" required>
+        </div>
+
+        <button type="submit" class="send-wa-btn">
+          <span>📲 Send Order via WhatsApp</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ================= CONFIGURATION =================
+    const PHONE_NUMBER = "94771234567"; // 👈 ඔයාගේ WhatsApp Number එක දාන්න
+    const totalFrames = 120;
+    const loopStartFrame = 90; 
+    const loopEndFrame = 119;
+
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    const progressBar = document.getElementById('progress-bar');
+    const sections = document.querySelectorAll('.video-scroll-zone .section');
+    const dots = document.querySelectorAll('.dot');
+    const scrollZone = document.querySelector('.video-scroll-zone');
+
+    const images = [];
+    let currentFrame = 0;
+    let isAutoLooping = false;
+    let loopFrameIndex = loopStartFrame;
+    let autoLoopAnimId = null;
+
+    const currentFramePath = index => `frames/frame_${index.toString().padStart(4, '0')}.jpg`;
+
+    // Resize Canvas
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      renderFrame(currentFrame);
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // Preload Frames
+    let loadedCount = 0;
+    for (let i = 1; i <= totalFrames; i++) {
+      const img = new Image();
+      img.src = currentFramePath(i);
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === 1) resizeCanvas();
+      };
+      images.push(img);
+    }
+
+    // Render Frame
+    function renderFrame(index) {
+      const img = images[index];
+      if (!img || !img.complete) return;
+
+      const hRatio = canvas.width / img.width;
+      const vRatio = canvas.height / img.height;
+      const ratio = Math.max(hRatio, vRatio);
+      
+      const shiftX = (canvas.width - img.width * ratio) / 2;
+      const shiftY = (canvas.height - img.height * ratio) / 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, img.width, img.height, shiftX, shiftY, img.width * ratio, img.height * ratio);
+    }
+
+    // Background Frame Loop 90 - 120 for Bottom Section
+    function runAutoLoop() {
+      if (!isAutoLooping) return;
+
+      loopFrameIndex++;
+      if (loopFrameIndex > loopEndFrame) {
+        loopFrameIndex = loopStartFrame;
+      }
+
+      renderFrame(loopFrameIndex);
+      setTimeout(() => {
+        autoLoopAnimId = requestAnimationFrame(runAutoLoop);
+      }, 70); 
+    }
+
+    // Scroll Control
+    function handleScroll() {
+      const scrollTop = window.scrollY;
+      const scrollZoneHeight = scrollZone.offsetHeight - window.innerHeight;
+
+      if (scrollTop >= scrollZoneHeight) {
+        if (!isAutoLooping) {
+          isAutoLooping = true;
+          loopFrameIndex = loopStartFrame;
+          runAutoLoop();
+        }
+        progressBar.style.width = '100%';
+        return;
+      } else {
+        if (isAutoLooping) {
+          isAutoLooping = false;
+          cancelAnimationFrame(autoLoopAnimId);
+        }
+      }
+
+      const scrollFraction = Math.max(0, scrollTop / scrollZoneHeight);
+      progressBar.style.width = (scrollFraction * 100) + '%';
+
+      const frameIndex = Math.min(totalFrames - 1, Math.floor(scrollFraction * totalFrames));
+      currentFrame = frameIndex;
+      requestAnimationFrame(() => renderFrame(frameIndex));
+
+      const activeSecIndex = Math.min(Math.floor(scrollFraction * sections.length), sections.length - 1);
+      sections.forEach((sec, idx) => {
+        if (idx === activeSecIndex) {
+          sec.classList.add('active');
+          dots[idx].classList.add('active');
+        } else {
+          sec.classList.remove('active');
+          dots[idx].classList.remove('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', handleScroll);
+
+    // ================= WHATSAPP ORDER LOGIC =================
+    function openOrderModal(dishName) {
+      document.getElementById('modalDish').value = dishName;
+      document.getElementById('orderModal').classList.add('active');
+    }
+
+    function closeOrderModal() {
+      document.getElementById('orderModal').classList.remove('active');
+    }
+
+    function sendWhatsAppOrder(e) {
+      e.preventDefault();
+      
+      const dish = document.getElementById('modalDish').value;
+      const qty = document.getElementById('modalQty').value;
+      const spice = document.getElementById('modalSpice').value;
+      const name = document.getElementById('modalName').value;
+      const address = document.getElementById('modalAddress').value;
+
+      const message = `*🔥 NEW ORDER - KOTTU LAB*\n` +
+                      `----------------------------------\n` +
+                      `*Dish:* ${dish}\n` +
+                      `*Quantity:* ${qty} portion(s)\n` +
+                      `*Spice Level:* ${spice}\n\n` +
+                      `*Customer Details:*\n` +
+                      `*Name:* ${name}\n` +
+                      `*Address/Notes:* ${address}\n` +
+                      `----------------------------------\n` +
+                      `_Sent via Kottu Lab Web App_`;
+
+      const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+      closeOrderModal();
+    }
+  </script>
+</body>
+</html>
